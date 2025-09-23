@@ -1,0 +1,20 @@
+{
+    "deploy": [
+        "../deploy_c3.md"
+    ],
+    "docs": "http://www.google.com",
+    "features": [
+        "BLE",
+        "WiFi",
+        "External Flash",
+        "Display"
+    ],
+    "images": [
+        "lilygo-tdisplay.webp"
+    ],
+    "mcu": "esp32c3",
+    "product": "SpotPear C3-1.44 MiniTV",
+    "thumbnail": "",
+    "url": "https://www.spotpear.com",
+    "vendor": "SpotPear"
+}
