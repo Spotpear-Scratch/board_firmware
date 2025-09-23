@@ -1,13 +1,14 @@
 
 
-.PHONY: all mrproper rebuild get-esp get-lvmicropython link-board-port build-spotpear-cross build-spotpear-submodules build-spotpear-build build-spotpear-deploy build-spotpear-monitor 
+.PHONY: all mrproper rebuild get-esp get-lvmicropython link-board-port build-spotpear-cross build-spotpear-%
+
 
 # UART port for flashing/monitoring; note: you need dialup group or root access
 PORT ?= /dev/ttyACM0
 
 # Obtain specific supported tool
 get-esp:
-	git clone --recursive https://github.com/espressif/esp-idf.git -v v5.2.2
+	git clone --recursive https://github.com/espressif/esp-idf.git -b v5.2.2
 	(cd esp-idf ; git submodule update --init --recursive)
 	(cd esp-idf ; ./install.sh )
 	#(cd esp-idf ; git checkout v5.2.2 ; git submodule update --init --recursive)
@@ -19,7 +20,7 @@ get-lvmicropython:
 
 #
 link-board-port:
-	ln -s lv_micropython_board_port/ports/esp32/boards/SPOTPEARC3 lv_micropython/ports/esp32/boards/SPOTPEARC3
+	ln -s $(shell readlink -m lv_micropython_board_port/ports/esp32/boards/SPOTPEARC3) lv_micropython/ports/esp32/boards/SPOTPEARC3
 
 #
 build-spotpear-cross:
@@ -29,31 +30,31 @@ build-spotpear-cross:
 
 build-spotpear-submodules:
 	(cd lv_micropython ; source ../esp-idf/export.sh ; 					\
-		make -C ports/esp32 BOARD=SPOTBEARC3 submodules					\
+		make -C ports/esp32 BOARD=SPOTPEARC3 submodules					\
 	)
 
-build-spotpear-build:
+build-spotpear-clean:
 	(cd lv_micropython ; source ../esp-idf/export.sh ; 					\
-		make -C ports/esp32 BOARD=SPOTBEARC3 clean all					\
+		make -C ports/esp32 BOARD=SPOTPEARC3 PORT=$(PORT) clean				\
 	)
 
-build-spotpear-deploy:
+build-spotpear-%:
 	(cd lv_micropython ; source ../esp-idf/export.sh ; 					\
-		make -C ports/esp32 BOARD=SPOTBEARC3 PORT=$(PORT) deploy		\
+		make -C ports/esp32 BOARD=SPOTPEARC3 PORT=$(PORT) $*				\
 	)
 
-build-spotpear-monitor:
-	(cd lv_micropython ; source ../esp-idf/export.sh ; 					\
-		make -C ports/esp32 BOARD=SPOTBEARC3 PORT=$(PORT) monitor		\
-	)
 
 
 # Meta rules
 setup:  get-esp get-lvmicropython link-board-port build-spotpear-cross
 
-all: setup build-spotpear-submodules build-spotpear-build build-spotpear-deploy build-spotpear-monitor
+clean:
+	@echo "Running clean that might fail if theres no product - not an issue."
+	-$(MAKE) -C lv_micropython/ports/esp32  BOARD=SPOTPEARC3 clean
 
-rebuild: build-spotpear-build build-spotpear-deploy build-spotpear-monitor
+all: setup build-spotpear-submodules clean build-spotpear-all build-spotpear-deploy build-spotpear-monitor
+
+rebuild: clean build-spotpear-all build-spotpear-deploy build-spotpear-monitor
 
 mrproper:
 	@rm -rf esp-idf lv_micropython
