@@ -48,9 +48,10 @@ build-spotpear-%:
 # Meta rules
 setup:  get-esp get-lvmicropython link-board-port build-spotpear-cross
 
+
 clean:
 	@echo "Running clean that might fail if theres no product - not an issue."
-	-$(MAKE) -C lv_micropython/ports/esp32  BOARD=SPOTPEARC3 clean
+	-(source esp-idf/export.sh ; $(MAKE) -C lv_micropython/ports/esp32  BOARD=SPOTPEARC3 clean)
 
 all: setup build-spotpear-submodules clean build-spotpear-all build-spotpear-deploy build-spotpear-monitor
 
