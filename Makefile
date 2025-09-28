@@ -1,6 +1,6 @@
 
 
-.PHONY: all mrproper rebuild get-esp get-lvmicropython link-board-port build-spotpear-cross build-spotpear-%
+.PHONY: get-esp get-lvmicropython all mrproper rebuild get-esp get-lvmicropython link-board-port build-spotpear-cross build-spotpear-%
 
 
 # UART port for flashing/monitoring; note: you need dialup group or root access
@@ -8,14 +8,14 @@ PORT ?= /dev/ttyACM0
 
 # Obtain specific supported tool
 get-esp:
-	git clone --recursive https://github.com/espressif/esp-idf.git -b v5.2.2
+	if [ ! -d esp-idf ] ; then git clone --recursive https://github.com/espressif/esp-idf.git -b v5.2.2 ; fi
+	if [ ! "$(shell cd esp-idf ; git describe --tags --exact-match 2>/dev/null || echo 'x')" == "v5.2.2" ] ; then echo "Not on tag v5.2.2 or esp-idf folder is corrupt, remove and start again" ; exit 1 ; fi
 	(cd esp-idf ; git submodule update --init --recursive)
 	(cd esp-idf ; ./install.sh )
-	#(cd esp-idf ; git checkout v5.2.2 ; git submodule update --init --recursive)
 
-#
+# Obtain specific supported lv_micropython
 get-lvmicropython:
-	git clone https://github.com/lvgl/lv_micropython.git
+	if [ ! -d lv_micropython ] ; then git clone https://github.com/lvgl/lv_micropython.git ; fi
 	(cd lv_micropython ; git submodule update --init --recursive user_modules/lv_binding_micropython)
 
 #
