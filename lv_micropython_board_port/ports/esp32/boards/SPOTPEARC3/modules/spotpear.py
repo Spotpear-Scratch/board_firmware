@@ -63,7 +63,8 @@ def set_screen_background_color( color ) :
 def draw_pixel( x=0, y=0, _color=0xff0000 ):
     scr = lv.screen_active()
     pixel = lv.obj(scr)
-    pixel.set_size(10, 10)
+    pixel.remove_flag(lv.obj.FLAG.SCROLLABLE)
+    pixel.set_size(1, 1)
     pixel.set_pos(x, y)
     pixel.set_style_bg_color(lv.color_hex(_color), 0)
     return pixel
