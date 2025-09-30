@@ -56,8 +56,7 @@ def clear_screen( color=0x003a57 ):
 
 def set_screen_background_color( color ) :
     screen = lv.screen_active()
-    screen.set_style_bg_color(lv.color_hex(rbg_to_rgb(color)), lv.PART.MAIN)
-
+    screen.set_style_bg_color(lv.color_hex(rbg_to_rgb(int(color, 16))), lv.PART.MAIN)
 
 # Drawing a pixel at a given position with a given color
 def draw_pixel( x=0, y=0, _color=0xff0000 ):
