@@ -36,7 +36,7 @@ def sleep( ms ):
 
 def init_display():
     spi = machine.SPI( 1, baudrate=40_000_000, polarity=0, phase=0, sck=machine.Pin(3, machine.Pin.OUT), mosi=machine.Pin(4, machine.Pin.OUT), )
-    disp = st77xx.St7735(rot=st77xx.ST77XX_INV_LANDSCAPE,res=(128,128), model='redtab', spi=spi, cs=2, dc=0, rst=5, rp2_dma=None, )
+    disp = st77xx.St7735(rot=st77xx.ST77XX_MIRROR_PORTRAIT,res=(128,128), model='redtab', spi=spi, cs=2, dc=0, rst=5, rp2_dma=None, )
     scr = lv.obj()
     lv.screen_load(scr)
     clear_screen(0x0000ff)

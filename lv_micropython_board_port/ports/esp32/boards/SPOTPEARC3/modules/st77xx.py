@@ -143,6 +143,7 @@ ST77XX_MADCTL_ROTS=(
     const(ST77XX_MADCTL_MX | ST77XX_MADCTL_MV), # 1 = landscape
     const(ST77XX_MADCTL_MY | ST77XX_MADCTL_MX), # 2 = inverted portrait
     const(ST77XX_MADCTL_MY | ST77XX_MADCTL_MV), # 3 = inverted landscape
+    const(ST77XX_MADCTL_MY),                    # 4 = mirrored portrait
 )
 
 ST77XX_COLOR_MODE_65K = const(0x50)
@@ -170,6 +171,7 @@ ST77XX_PORTRAIT = const(0)
 ST77XX_LANDSCAPE = const(1)
 ST77XX_INV_PORTRAIT = const(2)
 ST77XX_INV_LANDSCAPE = const(3)
+ST77XX_MIRROR_PORTRAIT = const(4)
 
 class St77xx_hw(object):
     def __init__(self, *, cs, dc, spi, res, suppRes, bl=None, model=None, suppModel=[], rst=None, rot=ST77XX_LANDSCAPE, bgr=False, rp2_dma=None):
