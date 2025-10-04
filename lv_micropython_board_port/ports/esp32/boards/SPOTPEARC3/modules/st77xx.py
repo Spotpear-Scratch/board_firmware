@@ -338,9 +338,9 @@ class St7735_hw(St77xx_hw):
             # see here for explanations: https://github.com/adafruit/Adafruit-ST7735-Library/blob/master/Adafruit_ST7735.cpp
             (ST77XX_SWRESET,None, 50),
             (ST77XX_SLPOUT, None, 100),
-            (ST77XX_FRMCTR1,b'\x01\x2c\x2d'),
-            (ST77XX_FRMCTR2,b'\x01\x2c\x2d'),
-            (ST77XX_FRMCTR3,b'\x01\x2c\x2d\x01\x2c\x2d'),
+            (ST77XX_FRMCTR1,b'\x01\x2a\x2f'),
+            (ST77XX_FRMCTR2,b'\x01\x2a\x2f'),
+            (ST77XX_FRMCTR3,b'\x01\x2a\x2f\x01\x2a\x2f'),
             (ST77XX_INVCTR,b'\x07'),
             (ST7735_PWCTR1,b'\xa2\x02\xb4'),
             (ST7735_PWCTR2,b'\xc5'),
