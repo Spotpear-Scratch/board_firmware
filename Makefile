@@ -41,7 +41,7 @@ build-spotpear-clean:
 SHA := $(shell git rev-parse --short=10 HEAD)
 build-spotpear-tagmachinename:
 	(cd lv_micropython_board_port/ports/esp32/boards/SPOTPEARC3 ; 				\
-		sed -iE 's/\(version \)[^)]*/\1'"$(SHA)"'/' mpconfigboard.h 				\
+		sed -i 's/\(version \)[^)]*/\1'"$(SHA)"'/' mpconfigboard.h 				\
 	)
 
 
