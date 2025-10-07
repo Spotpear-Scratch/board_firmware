@@ -18,25 +18,25 @@ timer4 = machine.Timer(-1)
 timer5 = machine.Timer(-1)
 
 # Expects gloabal timers 1..5
-def set_timer( timer, _period = 5000 ):
+def set_timer( timer = 1, _period = 5000, callback_fn = None):
     # Create a one-shot timer that triggers after 5000 milliseconds (5 seconds)
     if timer == 1:
-        timer1.init(mode=machine.Timer.ONE_SHOT, period=_period, callback=on_timer_trigger_timer1)
+        timer1.init(mode=machine.Timer.ONE_SHOT, period=_period, callback=callback_fn)
     elif timer == 2:
-        timer2.init(mode=machine.Timer.ONE_SHOT, period=_period, callback=on_timer_trigger_timer2)
+        timer2.init(mode=machine.Timer.ONE_SHOT, period=_period, callback=callback_fn)
     elif timer == 3:
-        timer3.init(mode=machine.Timer.ONE_SHOT, period=_period, callback=on_timer_trigger_timer3)
+        timer3.init(mode=machine.Timer.ONE_SHOT, period=_period, callback=callback_fn)
     elif timer == 4:
-        timer4.init(mode=machine.Timer.ONE_SHOT, period=_period, callback=on_timer_trigger_timer4)
+        timer4.init(mode=machine.Timer.ONE_SHOT, period=_period, callback=callback_fn)
     elif timer == 5:
-        timer5.init(mode=machine.Timer.ONE_SHOT, period=_period, callback=on_timer_trigger_timer5)
+        timer5.init(mode=machine.Timer.ONE_SHOT, period=_period, callback=callback_fn)
 
 def sleep( ms ):
     time.sleep_ms( ms )
 
 def init_display():
     spi = machine.SPI( 1, baudrate=40_000_000, polarity=0, phase=0, sck=machine.Pin(3, machine.Pin.OUT), mosi=machine.Pin(4, machine.Pin.OUT), )
-    disp = st77xx.St7735(rot=st77xx.ST77XX_INV_LANDSCAPE,res=(128,128), model='redtab', spi=spi, cs=2, dc=0, rst=5, rp2_dma=None, )
+    disp = st77xx.St7735(rot=st77xx.ST77XX_MIRROR_PORTRAIT,res=(128,128), model='redtab', spi=spi, cs=2, dc=0, rst=5, rp2_dma=None, )
     scr = lv.obj()
     lv.screen_load(scr)
     clear_screen(0x0000ff)
@@ -56,7 +56,7 @@ def clear_screen( color=0x003a57 ):
 
 def set_screen_background_color( color ) :
     screen = lv.screen_active()
-    screen.set_style_bg_color(lv.color_hex(rbg_to_rgb(int(color, 16))), lv.PART.MAIN)
+    screen.set_style_bg_color(lv.color_hex(rbg_to_rgb(color)), lv.PART.MAIN)
 
 # Drawing a pixel at a given position with a given color
 def draw_pixel( x=0, y=0, _color=0xff0000 ):
