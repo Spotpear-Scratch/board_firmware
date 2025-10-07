@@ -18,18 +18,18 @@ timer4 = machine.Timer(-1)
 timer5 = machine.Timer(-1)
 
 # Expects gloabal timers 1..5
-def set_timer( timer, _period = 5000 ):
+def set_timer( timer = 1, _period = 5000, callback_fn = None):
     # Create a one-shot timer that triggers after 5000 milliseconds (5 seconds)
     if timer == 1:
-        timer1.init(mode=machine.Timer.ONE_SHOT, period=_period, callback=on_timer_trigger_timer1)
+        timer1.init(mode=machine.Timer.ONE_SHOT, period=_period, callback=callback_fn)
     elif timer == 2:
-        timer2.init(mode=machine.Timer.ONE_SHOT, period=_period, callback=on_timer_trigger_timer2)
+        timer2.init(mode=machine.Timer.ONE_SHOT, period=_period, callback=callback_fn)
     elif timer == 3:
-        timer3.init(mode=machine.Timer.ONE_SHOT, period=_period, callback=on_timer_trigger_timer3)
+        timer3.init(mode=machine.Timer.ONE_SHOT, period=_period, callback=callback_fn)
     elif timer == 4:
-        timer4.init(mode=machine.Timer.ONE_SHOT, period=_period, callback=on_timer_trigger_timer4)
+        timer4.init(mode=machine.Timer.ONE_SHOT, period=_period, callback=callback_fn)
     elif timer == 5:
-        timer5.init(mode=machine.Timer.ONE_SHOT, period=_period, callback=on_timer_trigger_timer5)
+        timer5.init(mode=machine.Timer.ONE_SHOT, period=_period, callback=callback_fn)
 
 def sleep( ms ):
     time.sleep_ms( ms )
