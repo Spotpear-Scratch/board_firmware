@@ -53,9 +53,12 @@ clean:
 	@echo "Running clean that might fail if theres no product - not an issue."
 	-(source esp-idf/export.sh ; $(MAKE) -C lv_micropython/ports/esp32  BOARD=SPOTPEARC3 clean)
 
-all: setup build-spotpear-submodules clean build-spotpear-all build-spotpear-deploy build-spotpear-monitor
 
 rebuild: clean build-spotpear-all build-spotpear-deploy build-spotpear-monitor
+
+
+all: setup build-spotpear-submodules rebuild
+
 
 mrproper:
 	@rm -rf esp-idf lv_micropython
