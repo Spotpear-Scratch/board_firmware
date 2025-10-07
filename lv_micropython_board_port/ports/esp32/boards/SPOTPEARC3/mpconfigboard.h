@@ -1,4 +1,4 @@
-#define MICROPY_HW_BOARD_NAME "Spotpear C3-1.44 MiniTV"
+#define MICROPY_HW_BOARD_NAME "Spotpear C3-1.44 MiniTV (version __________)"
 #define MICROPY_HW_MCU_NAME "ESP32C3"
 
 #define MICROPY_HW_ENABLE_SDCARD            (0)

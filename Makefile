@@ -38,6 +38,13 @@ build-spotpear-clean:
 		make -C ports/esp32 BOARD=SPOTPEARC3 PORT=$(PORT) clean				\
 	)
 
+SHA := $(shell git rev-parse --short=10 HEAD)
+build-spotpear-tagmachinename:
+	(cd lv_micropython_board_port/ports/esp32/boards/SPOTPEARC3 ; 				\
+		sed -iE 's/\(version \)[^)]*/\1'"$(SHA)"'/' mpconfigboard.h 				\
+	)
+
+
 build-spotpear-%:
 	(cd lv_micropython ; source ../esp-idf/export.sh ; 					\
 		make -C ports/esp32 BOARD=SPOTPEARC3 PORT=$(PORT) $*				\
@@ -54,7 +61,7 @@ clean:
 	-(source esp-idf/export.sh ; $(MAKE) -C lv_micropython/ports/esp32  BOARD=SPOTPEARC3 clean)
 
 
-rebuild: clean build-spotpear-all build-spotpear-deploy build-spotpear-monitor
+rebuild: clean build-spotpear-tagmachinename build-spotpear-all build-spotpear-deploy build-spotpear-monitor
 
 
 all: setup build-spotpear-submodules rebuild
