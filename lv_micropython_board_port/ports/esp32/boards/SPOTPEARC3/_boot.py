@@ -36,7 +36,7 @@ def boot_get_button( button_number ):
 
 #print("Short 3s delay in the event your blocks code freezes the board!\n")
 #print("Press both buttons to clear the scratch code from this device...\n")
-for i in range(300):  # 300 x 10ms = 2.0 seconds
+for i in range(10):  # 10 x 10ms = 100 milliseconds
     if boot_get_button(1) and boot_get_button(2):
         #print("Both buttons pressed - clearing scratch code and rebooting!\n")
         try:
