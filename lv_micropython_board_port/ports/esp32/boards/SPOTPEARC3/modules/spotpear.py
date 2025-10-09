@@ -1,14 +1,43 @@
 name = "spotpear"
 
 # Global imports for most spotpear blocks
+# System/General imports
+import os
+import time
+import utime
+
+# HW Specific imports
+import micropython
+import machine
+
 import random
 import math
-import machine
-import st77xx
-import lvgl as lv
-import time
-import os
 
+# Graphics imports
+import lvgl as lv
+import st77xx
+
+##############################################################################
+##############################################################################
+#
+# System initialization
+#
+
+def board_setup():
+    # Soft reset causes a crash, so force a hard reset
+    if machine.reset_cause() == machine.SOFT_RESET:
+        machine.reset()     
+    init_display()
+    clear_screen(0x0000ff)
+    button_setup_event_handler()
+    set_led(0)
+
+
+##############################################################################
+##############################################################################
+#
+# Timer/sleep related functions
+#
 
 # Timers in use for various tasks
 timer1 = machine.Timer(-1)
@@ -34,6 +63,12 @@ def set_timer( timer = 1, _period = 5000, callback_fn = None):
 def sleep( ms ):
     time.sleep_ms( ms )
 
+
+##############################################################################
+##############################################################################
+#
+# Display related functions
+#
 def init_display():
     spi = machine.SPI( 1, baudrate=40_000_000, polarity=0, phase=0, sck=machine.Pin(3, machine.Pin.OUT), mosi=machine.Pin(4, machine.Pin.OUT), )
     disp = st77xx.St7735(rot=st77xx.ST77XX_MIRROR_PORTRAIT,res=(128,128), model='redtab', spi=spi, cs=2, dc=0, rst=5, rp2_dma=None, )
@@ -180,6 +215,12 @@ def draw_grid(grid, border, square_color, screen_width, screen_height):
                 square.set_style_border_color(lv.color_hex(0x000000), lv.PART.MAIN)
 
 
+##############################################################################
+##############################################################################
+#
+# LED/PIN Handlers
+#
+
 # Sets the LED to on of off
 def set_led( boolean ):
     from machine import Pin
@@ -206,19 +247,185 @@ def set_pin( pin_number, boolean ):
     else:
         pin.on( )
 
-# Gets button state of the two buttons
-def get_button( button_number ):
-    from machine import Pin
-    button1 = Pin(8, Pin.IN, Pin.PULL_UP)
-    button2 = Pin(10, Pin.IN, Pin.PULL_UP)
 
-    # Since we are using pullups we need to invert the value
+
+##############################################################################
+##############################################################################
+#
+# Button related functions
+#
+
+_button1_user_callback = None
+_button2_user_callback = None
+_button_both_user_callback = None
+
+last_button_ms = -1
+_spbutton1_pressed = False
+_spbutton2_pressed = False
+
+
+# No longer direct read
+def get_button( button_number ): 
+    global _spbutton1_pressed, _spbutton2_pressed
+    tval = None
     if button_number == 1:
-        return 1 - button1.value()
+        tval = _spbutton1_pressed
+        _spbutton1_pressed = False
     elif button_number == 2:
-        return 1 - button2.value()
-    else:
-        return 0
+        tval = _spbutton2_pressed
+        _spbutton2_pressed = False
+    return tval
 
 
+# Allow setting of callbacks from main user program
+# NOTE: Any number other than 1 or 2 means 
+#       both buttons 1 and 2 are pressed within a period of time
+#
+def set_button_callback(button_number, _callback):
+    global _button1_user_callback, _button2_user_callback, _button_both_user_callback
+    if button_number == 1:
+        _button1_user_callback = _callback
+    elif button_number == 2:
+        _button2_user_callback = _callback
+    else:  # Both buttons
+        _button_both_user_callback = _callback
+
+# This is called from the IRQ via schedule
+def safe_button_handler(pin):
+    global last_button_ms, _spbutton1_pressed, _spbutton2_pressed, _button1_user_callback, _button2_user_callback, _button_both_user_callback, _spbutton1, _spbutton2
+    # Determine which button
+    otherbutton_pressed = False
+    button = 0
+    if pin == _spbutton1:
+        print("Button1 : Interrupt triggered!")
+        otherbutton_pressed = _spbutton2_pressed
+        button = 1
+    elif pin == _spbutton2:
+        print("Button2 : Interrupt triggered!")
+        otherbutton_pressed = _spbutton1_pressed
+        button = 2
+    #
+    # Get current time
+    current_ms = utime.ticks_ms()
+    # Handle first time button press
+    if last_button_ms == -1:
+        last_button_ms = current_ms + 9999  # Just a large number to avoid immediate trigger
+    #
+    # Check if both buttons pressed within 200ms
+    delta_ms = utime.ticks_diff(current_ms, last_button_ms)
+    if delta_ms < 200 and otherbutton_pressed:
+        last_button_ms = current_ms
+        #
+        # If callback is defined, then do it
+        if _button_both_user_callback is not None:
+            _spbutton1_pressed = False
+            _spbutton2_pressed = False
+            _button_both_user_callback()
+            return
+    # Update last button time
+    last_button_ms = current_ms
+    #
+    #
+    if button == 1:
+        print("Button1 : Pressed!")
+        # Event block callback for button 1
+        if _button1_user_callback is not None:
+            print("Button1 : Pressed - trying a callback!")
+            _spbutton1_pressed = False
+            _button1_user_callback()
+            return
+        #
+        # For manual button reads
+        _spbutton1_pressed = True
+        return
+    #
+    if button == 2:
+        # Event block callback for button 2
+        if _button2_user_callback is not None:
+            _spbutton2_pressed = False
+            _button2_user_callback()
+            return
+        #
+        # For manual button reads
+        _spbutton2_pressed = True
+        return
+
+
+
+# ISR cant allocate memory so we use schedule to call a function later
+def button1_handler(pin):
+    micropython.schedule(safe_button_handler, pin)
+
+def button2_handler(pin):
+    micropython.schedule(safe_button_handler, pin)
+
+def button_setup_event_handler():
+    from machine import Pin
+    global _spbutton1_pressed, _spbutton2_pressed, _spbutton1, _spbutton2
+    #
+    # Setup buttons with IRQs
+    _spbutton1_pressed = False
+    _spbutton1 = Pin(8, Pin.IN)
+    _spbutton1.irq(trigger=Pin.IRQ_RISING, handler=button1_handler)
+    #
+    _spbutton2_pressed = False
+    _spbutton2 = Pin(10, Pin.IN)
+    _spbutton2.irq(trigger=Pin.IRQ_RISING, handler=button2_handler)
+
+
+
+##############################################################################
+##############################################################################
+#
+# Helper functions for vfs operations
+#
+
+# Remove a file if it exists
+def fs_rm( filename="main.py" ):
+    try:
+        os.remove(filename)
+    except OSError:
+        pass
+
+# Create a file from stdin
+def fs_write( filename="main.py" ):
+    print("Enter your input line by line. Press Ctrl+D (or Ctrl+Z on Windows) to finish:")
+    try:
+        with open(filename, "w") as f:
+            while True:
+                try:
+                    line = input()
+                    f.write(line + "\n")
+                except EOFError:
+                    break
+        print("All lines written to ", filename)
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+# List files in the current directory with sizes and modification dates
+def fs_ls():
+    try:
+        files = os.listdir()
+        for file in files:
+            if os.stat(file)[0] & 0x8000:  # Check if it's a regular file
+                stat = os.stat(file)
+                size = stat[6]
+                # Some MicroPython ports support mtime in stat[8]
+                try:
+                    mtime = stat[8]
+                    print(f"{file} — {size} bytes — Last modified: {mtime}")
+                except IndexError:
+                    print(f"{file} — {size} bytes")
+        print("End of file list.")
+    except Exception as e:
+        print("Error:", e)
+
+# Dump a text file to stdout
+def fs_cat(filename):
+    try:
+        with open(filename, 'r') as f:
+            for line in f:
+                print(line, end='')  # Avoid double newlines
+    except Exception as e:
+        print("Error reading file:", e)
 
